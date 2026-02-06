@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Good Thing Today</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg1: #FFE4E6;
+  --bg2: #E0E7FF;
+  --card: rgba(255,255,255,0.75);
+  --text: #2D2A32;
+  --accent: #F472B6;
+  --success: #10B981;
+}
+
+body.dark {
+  --bg1: #0F172A;
+  --bg2: #1E293B;
+  --card: rgba(30,41,59,0.9);
+  --text: #E5E7EB;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(120deg, var(--bg1), var(--bg2));
+  background-size: 200% 200%;
+  animation: bg 20s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  overflow: hidden;
+}
+
+@keyframes bg {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+.card {
+  width: 90%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 36px 28px;
+  text-align: center;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+  position: relative;
+  z-index: 2;
+}
+
+.time {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 34px;
+}
+
+textarea {
+  width: 100%;
+  height: 90px;
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  font-size: 16px;
+  resize: none;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+}
+
+button {
+  margin-top: 18px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #F472B6, #FB7185);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.link {
+  margin-top: 16px;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.message {
+  display: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  color: var(--success);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.modal-content {
+  background: var(--card);
+  padding: 24px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.entry {
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.heart {
+  position: absolute;
+  bottom: -20px;
+  font-size: 18px;
+  animation: float 10s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes float {
+  to {
+    transform: translateY(-120vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <div class="time" id="timeText"></div>
+
+  <div id="form">
+    <h1>What is one good thing today?</h1>
+    <textarea id="input" placeholder="Even something tiny is okay…"></textarea>
+    <button onclick="save()">💗 Save</button>
+    <div class="link" onclick="openHistory()">View past good things</div>
+  </div>
+
+  <div class="message" id="done">
+    Thank you. You showed up today 🌱
+  </div>
+</div>
+
+<div class="modal" id="modal" onclick="closeHistory()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>Your good things 💕</h3>
+    <div id="history"></div>
+  </div>
+</div>
+
+<script>
+const hour = new Date().getHours();
+const timeText = document.getElementById("timeText");
+
+if (hour >= 18 || hour < 5) {
+  document.body.classList.add("dark");
+  timeText.textContent = "Before you rest… 🌙";
+} else {
+  timeText.textContent = "Let’s be gentle today ☀️";
+}
+
+function save() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  const today = new Date().toDateString();
+  const data = JSON.parse(localStorage.getItem("goodThings") || "[]");
+
+  if (data.some(e => e.date === today)) {
+    alert("You already saved today 💛");
+    return;
+  }
+
+  data.unshift({ date: today, text });
+  localStorage.setItem("goodThings", JSON.stringify(data));
+
+  form.style.display = "none";
+  done.style.display = "block";
+}
+
+function openHistory() {
+  const data = JSON.parse(localStorage.getItem("goodThings") || "[]");
+  history.innerHTML = data.map(e =>
+    `<div class="entry"><strong>${e.date}</strong><br>${e.text}</div>`
+  ).join("");
+  modal.style.display = "flex";
+}
+
+function closeHistory() {
+  modal.style.display = "none";
+}
+
+setInterval(() => {
+  const h = document.createElement("div");
+  h.className = "heart";
+  h.textContent = "💗";
+  h.style.left = Math.random() * 100 + "vw";
+  h.style.animationDuration = 6 + Math.random() * 6 + "s";
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), 12000);
+}, 1200);
+</script>
+
+</body>
+</html>
